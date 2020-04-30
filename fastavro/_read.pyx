@@ -13,8 +13,12 @@ import datetime
 from decimal import Context
 from fastavro.six import MemoryIO
 from uuid import UUID
+from struct import unpack
 
 import json
+
+from cpython.long cimport PyLong_FromLongLong, PyLong_FromUnsignedLongLong
+from cpython.version cimport PY_MAJOR_VERSION
 
 from ._six import (
     btou, utob, iteritems, is_str, long, be_signed_bytes_to_int
@@ -491,6 +495,48 @@ cdef read_record(fo, writer_schema, reader_schema=None, return_record_name=False
     return record
 
 
+cpdef read_fixed_sized_int(data, writer_schema=None, reader_schema=None):
+    size = writer_schema['size']
+    cdef unsigned long long mask = 2 ** (size * 8 - 1)
+    cdef unsigned long long d = 0
+
+    for i in range(size - 1, -1, -1):
+        d |= data[i] << (i * 8)
+
+    return PyLong_FromLongLong(-(d & mask) + (d & ~mask))
+
+
+cpdef read_fixed_sized_int2(data, writer_schema=None, reader_schema=None):
+    size = writer_schema['size']
+    cdef unsigned long long mask = 2 ** (size * 8 - 1)
+    cdef unsigned long long d = 0
+
+    for i in range(size - 1, -1, -1):
+        d |= ord(data[i]) << (i * 8)
+
+    return PyLong_FromLongLong(-(d & mask) + (d & ~mask))
+
+
+cpdef read_fixed_sized_uint(data, writer_schema=None, reader_schema=None):
+    size = writer_schema['size']
+    cdef unsigned long long d = 0
+
+    for i in range(size - 1, -1, -1):
+        d |= data[i] << (i * 8)
+
+    return PyLong_FromUnsignedLongLong(d)
+
+
+cpdef read_fixed_sized_uint2(data, writer_schema=None, reader_schema=None):
+    size = writer_schema['size']
+    cdef unsigned long long d = 0
+
+    for i in range(size - 1, -1, -1):
+        d |= ord(data[i]) << (i * 8)
+
+    return PyLong_FromUnsignedLongLong(d)
+
+
 LOGICAL_READERS = {
     'long-timestamp-millis': read_timestamp_millis,
     'long-timestamp-micros': read_timestamp_micros,
@@ -501,6 +547,13 @@ LOGICAL_READERS = {
     'int-time-millis': read_time_millis,
     'long-time-micros': read_time_micros,
 }
+
+if PY_MAJOR_VERSION >= 3:
+    LOGICAL_READERS['fixed-sized-int'] = read_fixed_sized_int
+    LOGICAL_READERS['fixed-sized-uint'] = read_fixed_sized_uint
+else:
+    LOGICAL_READERS['fixed-sized-int'] = read_fixed_sized_int2
+    LOGICAL_READERS['fixed-sized-uint'] = read_fixed_sized_uint2
 
 
 cpdef maybe_promote(data, writer_type, reader_type):

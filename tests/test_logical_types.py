@@ -455,3 +455,160 @@ def test_pandas_datetime():
         )
     }
     assert serialize(schema, data1)
+
+
+# test fixed sized integers
+schemas_fixed_sized_int = {
+    "int8": {
+        "name": "int8_t", "type": "fixed",
+        "size": 1, "logicalType": "sized-int",
+    }, "int16": {
+        "name": "int16_t", "type": "fixed",
+        "size": 2, "logicalType": "sized-int",
+    }, "int32": {
+        "name": "int32_t", "type": "fixed",
+        "size": 4, "logicalType": "sized-int",
+    }, "int64": {
+        "name": "int64_t", "type": "fixed",
+        "size": 8, "logicalType": "sized-int",
+    }, "uint8": {
+        "name": "uint8_t", "type": "fixed",
+        "size": 1, "logicalType": "sized-uint",
+    }, "uint16": {
+        "name": "uint16_t", "type": "fixed",
+        "size": 2, "logicalType": "sized-uint",
+    }, "uint32": {
+        "name": "uint32_t", "type": "fixed",
+        "size": 4, "logicalType": "sized-uint",
+    }, "uint64": {
+        "name": "uint64_t", "type": "fixed",
+        "size": 8, "logicalType": "sized-uint",
+    }, }
+
+
+def test_fixed_size_int8():
+    data1 = -128
+    schema = schemas_fixed_sized_int["int8"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+    data1 = 127
+    schema = schemas_fixed_sized_int["int8"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+
+def test_fixed_size_int16():
+    data1 = -32768
+    schema = schemas_fixed_sized_int["int16"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+    data1 = 32767
+    schema = schemas_fixed_sized_int["int16"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+
+def test_fixed_size_int32():
+    data1 = -2147483648
+    schema = schemas_fixed_sized_int["int32"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+    data1 = 2147483647
+    schema = schemas_fixed_sized_int["int32"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+
+def test_fixed_size_int64():
+    data1 = -2305843009213693952
+    schema = schemas_fixed_sized_int["int64"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+    data1 = 2305843009213693951
+    schema = schemas_fixed_sized_int["int64"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+
+def test_fixed_size_uint8():
+    data1 = 255
+    schema = schemas_fixed_sized_int["uint8"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+    data1 = 0
+    schema = schemas_fixed_sized_int["uint8"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+
+def test_fixed_size_uint16():
+    data1 = 65535
+    schema = schemas_fixed_sized_int["uint16"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+    data1 = 0
+    schema = schemas_fixed_sized_int["uint16"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+
+def test_fixed_size_uint32():
+    data1 = 4294967295
+    schema = schemas_fixed_sized_int["uint32"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+    data1 = 0
+    schema = schemas_fixed_sized_int["uint32"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+
+def test_fixed_size_uint64():
+    data1 = 18446744073709551615
+    schema = schemas_fixed_sized_int["uint64"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
+
+    data1 = 0
+    schema = schemas_fixed_sized_int["uint64"]
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    assert (data1 == data2)
+    assert (len(binary) == schema['size'])
