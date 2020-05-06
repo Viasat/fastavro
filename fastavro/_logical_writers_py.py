@@ -200,12 +200,16 @@ _fixed_uint_formats = {
 
 
 def prepare_fixed_sized_int(data, schema):
+    if not isinstance(data, (int, long)):
+        return data
     size = schema['size']
     fmt = _fixed_int_formats[size]
     return pack(fmt, data)
 
 
 def prepare_fixed_sized_uint(data, schema):
+    if not isinstance(data, (int, long)):
+        return data
     size = schema['size']
     fmt = _fixed_uint_formats[size]
     return pack(fmt, data)
