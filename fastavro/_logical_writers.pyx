@@ -233,6 +233,8 @@ cdef _int_buffer = array('b')
 
 
 cdef prepare_fixed_sized_int(data, schema):
+    if not isinstance(data, (int, long)):
+        return data
     size = schema['size']
     output = clone(_int_buffer, size, False)
 
@@ -246,6 +248,8 @@ cdef prepare_fixed_sized_int(data, schema):
 
 
 cdef prepare_fixed_sized_uint(data, schema):
+    if not isinstance(data, (int, long)):
+        return data
     size = schema['size']
     output = clone(_int_buffer, size, False)
 
@@ -259,6 +263,8 @@ cdef prepare_fixed_sized_uint(data, schema):
 
 
 cdef prepare_fixed_sized_uint2(data, schema):
+    if not isinstance(data, (int, long)):
+        return data
     size = schema['size']
     output = clone(_int_buffer, size, False)
 
