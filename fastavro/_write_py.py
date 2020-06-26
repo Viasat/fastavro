@@ -150,9 +150,13 @@ def write_union(encoder, datum, schema):
         pytype = type(datum)
         best_match_index = -1
         most_fields = -1
+        expect_double = False
         for index, candidate in enumerate(schema):
+            candidate_record_type = extract_record_type(candidate)
+            if expect_double and candidate_record_type != 'double':
+                continue
             if _validate(datum, candidate, raise_errors=False):
-                if extract_record_type(candidate) == 'record':
+                if candidate_record_type == 'record':
                     candidate_fields = set(
                         f["name"] for f in candidate["fields"]
                     )
@@ -163,7 +167,12 @@ def write_union(encoder, datum, schema):
                         most_fields = fields
                 else:
                     best_match_index = index
-                    break
+                    # float conversions are lossy, so we keep
+                    # looking for another type if possible
+                    if candidate_record_type == 'float':
+                        expect_double = True
+                    else:
+                        break
         if best_match_index < 0:
             msg = '%r (type %s) do not match %s' % (datum, pytype, schema)
             raise ValueError(msg)
