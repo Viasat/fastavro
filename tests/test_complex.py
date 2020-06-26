@@ -65,11 +65,17 @@ schema = {
         }, {
             "name": "array_of_unions_with_floats",
             "type": ["null", {"type": "array",
+                              # The order here is chosen very carefully.
+                              # We want a float before a double to ensure that
+                              # our special case backwards compatibility logic
+                              # is triggered, and we want a long to follow that
+                              # float to ensure that integers are allowed to
+                              # match the float type.
                               "items": [
-                                  "long",
-                                  "int",
                                   "float",
+                                  "long",
                                   "double",
+                                  "int",
                               ]
                               }]
         },
@@ -102,7 +108,8 @@ def test_complex_schema():
         'multi_union_time': datetime.datetime.now(),
         'array_bytes_decimal': [Decimal("123.456")],
         'array_fixed_decimal': [Decimal("123.456")],
-        'array_record': [{'f1': '1', 'f2': Decimal("123.456")}]
+        'array_record': [{'f1': '1', 'f2': Decimal("123.456")}],
+        'array_of_unions_with_floats': [],
     }
     binary = serialize(schema, data1)
     data2 = deserialize(schema, binary)
@@ -130,7 +137,8 @@ def test_complex_schema_nulls():
     data1_compare = data1
     data1_compare.update(
         {'multi_union_time': None, 'array_bytes_decimal': None,
-         'array_fixed_decimal': None, 'union_uuid': None})
+         'array_fixed_decimal': None, 'union_uuid': None,
+         'array_of_unions_with_floats': None})
     assert (data1_compare == data2)
 
 
@@ -144,7 +152,12 @@ def test_complex_schema_unions_with_floats():
     data1 = {
         'array_string': [],
         'array_record': [],
-        'array_of_unions_with_floats': [1, 2, 3.14159265358979323846],
+        'array_of_unions_with_floats': [
+            1,
+            2,
+            3.14159265358979323846,
+            9007199254740993,
+        ],
     }
     binary = serialize(schema, data1)
     data2 = deserialize(schema, binary)
@@ -152,4 +165,12 @@ def test_complex_schema_unions_with_floats():
     data1_compare.update(
         {'multi_union_time': None, 'array_bytes_decimal': None,
          'array_fixed_decimal': None, 'union_uuid': None})
+    # 9007199254740993 is 2**53+1, which cannot be represented precisely
+    # as a floating point. fastavro allows the "float" type to match for
+    # integers and "float" comes first in the union, so "float" is selected
+    # and we get the nearest double available. Yes, double even though we said
+    # "float", because the conversion using the python float() function, which
+    # converts to a 64 bit floating point, aka a double. All of this behavior
+    # is logically wrong, but backwards compatibility is king.
+    data1_compare['array_of_unions_with_floats'][3] = 9007199254740992.0
     assert (data1_compare == data2)
