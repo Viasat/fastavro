@@ -61,8 +61,18 @@ schema = {
                     }
                 ]
             }
-                     }
-        }
+            }
+        }, {
+            "name": "array_of_unions_with_floats",
+            "type": ["null", {"type": "array",
+                              "items": [
+                                  "long",
+                                  "int",
+                                  "float",
+                                  "double",
+                              ]
+                              }]
+        },
     ],
     "namespace": "namespace",
     "name": "name",
@@ -128,3 +138,18 @@ def test_array_from_tuple():
     data_list = serialize({"type": "array", "items": "int"}, [1, 2, 3])
     data_tuple = serialize({"type": "array", "items": "int"}, (1, 2, 3))
     assert data_list == data_tuple
+
+
+def test_complex_schema_unions_with_floats():
+    data1 = {
+        'array_string': [],
+        'array_record': [],
+        'array_of_unions_with_floats': [1, 2, 3.14159265358979323846],
+    }
+    binary = serialize(schema, data1)
+    data2 = deserialize(schema, binary)
+    data1_compare = data1
+    data1_compare.update(
+        {'multi_union_time': None, 'array_bytes_decimal': None,
+         'array_fixed_decimal': None, 'union_uuid': None})
+    assert (data1_compare == data2)

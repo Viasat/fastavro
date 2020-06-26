@@ -243,7 +243,10 @@ cdef write_union(bytearray fo, datum, schema):
                         most_fields = fields
                 else:
                     best_match_index = index
-                    break
+                    # float conversions are lossy, so we keep
+                    # looking for another type if possible
+                    if candidate != 'float':
+                        break
         if best_match_index < 0:
             msg = '%r (type %s) do not match %s' % (datum, pytype, schema)
             raise ValueError(msg)
